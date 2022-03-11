@@ -1,5 +1,5 @@
 from math import pi, sin, cos
-
+#This is just a test for panda3d
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.actor.Actor import Actor
