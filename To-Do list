@@ -5,6 +5,9 @@ Necessary:
 - Upload all the models 
 - Change all the models to .egg files
 - NodePaths 
+- Install .obj to .egg file converter
+                (Home)
+- Install .egg to .obj file converter
 - 
 
 Optional: 
