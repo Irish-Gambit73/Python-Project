@@ -12,4 +12,7 @@ Necessary:
 
 Optional: 
 - Fix L3DT map 
-- 
+- Implement Point light
+- Implement Ambient Light
+- Mouse input after keyboard input
+- Make Scene Graph
