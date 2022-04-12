@@ -9,7 +9,10 @@ Necessary:
                 (Home) (Get Yabee!)
 - Install .egg to .obj file converter
 - https://github.com/fireclawthefox/panda3d-tutorial/blob/master/Panda3D%20Tutorial.pdf (look for .blend to .egg)
-- FSM animations, make animations: Idle, attack, walk
+- FSM animations, make animations: Idle, attack, walk 
+- https://www.bing.com/videos/search?q=how+to+play+a+music+file+in+python&docid=608034066496570449&mid=1B2EF029CA01D62D27DB1B2EF029CA01D62D27DB&view=detail&FORM=VIRE
+-> from playsound import Music_Play
+-
 
 Optional: 
 - Fix L3DT map 
