@@ -9,10 +9,11 @@ Necessary:
                 (Home) (Get Yabee!)
 - Install .egg to .obj file converter
 - https://github.com/fireclawthefox/panda3d-tutorial/blob/master/Panda3D%20Tutorial.pdf (look for .blend to .egg)
+- FSM animations, make animations: Idle, attack, walk
 
 Optional: 
 - Fix L3DT map 
 - Implement Point light
 - Implement Ambient Light
-- Mouse input after keyboard input
-- Make Scene Graph
+- Find new level/platform
+
