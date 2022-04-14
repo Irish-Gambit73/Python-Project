@@ -6,7 +6,7 @@ Necessary:
 - Change all the models to .egg files
 - NodePaths 
 - Install .obj to .egg file converter
-                (Home) (Get Yabee!)
+                (Home) (https://prosperocoder.com/posts/panda3d/panda3d-part-14-loading-gltf-objects-in-panda3d/#:~:text=In%20order%20to%20load%20a%20model%20we%20use,so%20at%20the%20same%20location%20as%20the%20camera.)
 - Install .egg to .obj file converter
 - https://github.com/fireclawthefox/panda3d-tutorial/blob/master/Panda3D%20Tutorial.pdf (look for .blend to .egg)
 - FSM animations, make animations: Idle, attack, walk 
