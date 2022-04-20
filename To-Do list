@@ -4,19 +4,15 @@ Necessary:
 - Add models here 
 - Upload all the models 
 - Change all the models to .egg files
-- NodePaths 
-- Install .obj to .egg file converter
-                (Home) (https://prosperocoder.com/posts/panda3d/panda3d-part-14-loading-gltf-objects-in-panda3d/#:~:text=In%20order%20to%20load%20a%20model%20we%20use,so%20at%20the%20same%20location%20as%20the%20camera.)
-- Install .egg to .obj file converter
-- https://github.com/fireclawthefox/panda3d-tutorial/blob/master/Panda3D%20Tutorial.pdf (look for .blend to .egg)
 - FSM animations, make animations: Idle, attack, walk 
+- Collisions
+- Add player 2 controls
+- Gui and menu
 -
 
 Optional: 
 - Implement Point light
 - Implement Ambient Light
--- https://www.bing.com/videos/search?q=how+to+play+a+music+file+in+python&docid=608034066496570449&mid=1B2EF029CA01D62D27DB1B2EF029CA01D62D27DB&view=detail&FORM=VIRE
--> from playsound import Music_Play
 -
 
 Links: 
