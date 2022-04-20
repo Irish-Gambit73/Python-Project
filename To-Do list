@@ -4,7 +4,7 @@ Necessary:
 - Add models here 
 - Upload all the models 
 - Change all the models to .egg files
-- FSM animations, make animations: Idle, attack, walk 
+- FSM animations, make animations: Idle, attack, walk (USE BLENDER FIRST AND TRY ANIMATIONS WITH .GLTF)
 - Collisions
 - Add player 2 controls
 - Gui and menu
