@@ -6,7 +6,7 @@ Necessary:
 - Change all the models to .egg files
 - FSM animations, make animations: Idle, attack, walk (USE BLENDER FIRST AND TRY ANIMATIONS WITH .GLTF)
 - Collisions
-- Add player 2 controls
+- Add Backward movement
 - Gui and menu
 -
 
