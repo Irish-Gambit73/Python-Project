@@ -15,15 +15,17 @@ class game(ShowBase):
         show-frame-rate-meter 1
         """
         loadPrcFileData("", configVars)
-
-        ambientLight = AmbientLight("ambientLight")
-        ambientLight.setColor((.3, .3, .3, 1))
-        directionalLight = DirectionalLight("directionalLight")
-        directionalLight.setDirection((-5, -5, -5))
-        directionalLight.setColor((1, 1, 1, 1))
-        directionalLight.setSpecularColor((1, 1, 1, 1))
-        render.setLight(render.attachNewNode(ambientLight))
-        render.setLight(render.attachNewNode(directionalLight))
+        
+        self.setuplights()
+        def setuplights(self):
+            ambientLight = AmbientLight("ambientLight")
+            ambientLight.setColor((.3, .3, .3, 1))
+            directionalLight = DirectionalLight("directionalLight")
+            directionalLight.setDirection((-5, -5, -5))
+            directionalLight.setColor((1, 1, 1, 1))
+            directionalLight.setSpecularColor((1, 1, 1, 1))
+            render.setLight(render.attachNewNode(ambientLight))
+            render.setLight(render.attachNewNode(directionalLight))
 
 
 
