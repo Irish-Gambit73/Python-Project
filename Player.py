@@ -2,7 +2,8 @@
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import KeyboardButton, Quat, Vec3
-from panda3d.core import CollisionHandlerQueue, CollisionNode, CollisionSphere, CollisionTraverser, BitMask32, CollisionBox, CollisionLine
+from panda3d.ode import OdeWorld, OdeBody, OdeMass
+from panda3d.core import BitMask32
 import sys, simplepbr
 
 class Player(ShowBase):
@@ -13,7 +14,7 @@ class Player(ShowBase):
             "left": 0, "right": 0, "forward": 0, "backward": 0, "leftp2": 0, "rightp2": 0, "forwardp2": 0, "backwardp2": 0}
 
         base.disableMouse()
-        self.camera.setPos(0, -4, 0.5)
+        self.camera.setPos(0, -10, 0.5)
         self.camera.setHpr(0, -1, 0)
 
         simplepbr.init()
@@ -24,25 +25,6 @@ class Player(ShowBase):
         self.Guts.setScale(0.001)
         self.Guts.setPos(-0.5, 0, 0)
         self.Guts.setHpr(90, 0, 0)
-        
-        #P1 model collisions (UNFINISHED)
-        self.GutsCSphere = CollisionSphere(0, 0, 0, 0.001)
-        self.GutsCNode = CollisionNode('Guts')
-        self.GutsCNode.addSolid(self.GutsCSphere)
-        self.GutsCNode.setFromCollideMask(BitMask32.bit(0))
-        self.GutsCNode.setIntoCollideMask(BitMask32.allOff())
-        self.GutsCTask = self.Guts.attachNewNode(self.GutsCNode)
-
-        self.cTrav = CollisionTraverser()
-        self.GutsCGroundHandler = CollisionHandlerQueue()
-        self.cTrav.addCollider(self.GutsCTask, self.GutsCGroundHandler)
-        taskMgr.add(self.traverseTask, "tsk_traverse")
-
-    def traverseTask(self, task=None):
-        self.GutsCGroundHandler.sortEntries()
-        for i in range(self.ballModelGroundHandler.getNumEntries()):
-            entry = self.ballModelGroundHandler.getEntry(i)
-        if task: return task.cont
 
         #P1 and menu controls
         self.accept("escape", sys.exit)
@@ -61,8 +43,7 @@ class Player(ShowBase):
         self.floor.setScale(0.05) 
         self.floor.setPos(0, 0, -0)
 
-        #Bottom (Ground) collision 
-        bottom = CollisionLine(0, -1, 0, 0, -1, 0)
+
 
         #P2 Model
         self.Casca = self.loader.loadModel("Models/box.egg")
@@ -70,15 +51,6 @@ class Player(ShowBase):
         self.Casca.setScale(0.05)
         self.Casca.setPos(1, 0, 0)
         self.Casca.setHpr(0, 0 ,0)
-
-        #P2 Model Collisions
-        self.CascaCSphere = CollisionSphere(0, 0, 0, 0.001)
-        self.CascaCNode = CollisionNode('box.egg')
-        self.CascaCNode.addSolid(self.CascaCSphere)
-        self.CascaCNode.setFromCollideMask(BitMask32.bit(0))
-        self.CascaCNode.setIntoCollideMask(BitMask32.allOff())
-        self.CascaCTask = self.Casca.attachNewNode(self.CascaCNode)
-        self.Casca.setCollideMask(BitMask32.bit(0))
 
         #P2 Controls
         self.accept("j", self.setKey, ["leftp2", True])
