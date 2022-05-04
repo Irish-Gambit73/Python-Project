@@ -1,30 +1,39 @@
 #player
 
 from direct.showbase.ShowBase import ShowBase
+from direct.showbase.ShowBase import *
 from panda3d.core import KeyboardButton, Quat, Vec3
 from panda3d.ode import OdeWorld, OdeBody, OdeMass
-from panda3d.core import BitMask32
+from panda3d.core import BitMask32, CollisionTraverser, CollisionHandlerQueue, CollisionNode, CollisionBox, CollisionHandlerPusher, CollisionSphere
 import sys, simplepbr
 
 class Player(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
-        
-        self.keyMap = {
-            "left": 0, "right": 0, "forward": 0, "backward": 0, "leftp2": 0, "rightp2": 0, "forwardp2": 0, "backwardp2": 0}
 
         base.disableMouse()
         self.camera.setPos(0, -10, 0.5)
-        self.camera.setHpr(0, -1, 0)
+        self.camera.setHpr(0, -1, 0) 
 
         simplepbr.init()
-
         #P1 Model
         self.Guts = self.loader.loadModel("Models/Guts.glb")
         self.Guts.reparentTo(self.render)
         self.Guts.setScale(0.001)
         self.Guts.setPos(-0.5, 0, 0)
         self.Guts.setHpr(90, 0, 0)
+        self.Guts.setH(100)
+        self.collTrav = CollisionTraverser()
+        self.GutsGroundSphere = CollisionSphere(0, 1.5, -1.5, 1.5)
+        self.GutsGroundCol = CollisionNode('GutssSphere')
+        self.GutsGroundCol.addSolid(self.GutsGroundSphere)
+
+        self.GutsGroundCol.setFromCollideMask(BitMask32.bit(0))
+        self.GutsGroundCol.setIntoCollideMask(BitMask32.allOff())
+
+        self.GutsGroundColNp = self.Guts.attachNewNode(self.GutsGroundCol)
+        self.GutsGroundHandler = CollisionHandlerQueue()
+        self.collTrav.addCollider(self.GutsGroundColNp, self.GutsGroundHandler)
 
         #P1 and menu controls
         self.accept("escape", sys.exit)
@@ -37,13 +46,16 @@ class Player(ShowBase):
         self.accept("s", self.setKey, ["backward", True])
         self.accept("s-up", self.setKey, ["backward", False])
 
+        self.keyMap = {
+            "left": 0, "right": 0, "forward": 0, "backward": 0, "leftp2": 0, "rightp2": 0, "forwardp2": 0, "backwardp2": 0}
+        self.isMoving = False
+
         #Environment Model
         self.floor = self.loader.loadModel("Models/floor")
-        self.floor.reparentTo(self.render)
+        self.floor.reparentTo(self.render) 
+        self.floor.setCollideMask(BitMask32.bit(0))
         self.floor.setScale(0.05) 
         self.floor.setPos(0, 0, -0)
-
-
 
         #P2 Model
         self.Casca = self.loader.loadModel("Models/box.egg")
@@ -63,9 +75,18 @@ class Player(ShowBase):
         self.accept("k-up", self.setKey, ["backwardp2", False])
 
         taskMgr.add(self.move, "moveTask")
-        self.isMoving = False
     def setKey(self, key, value):
         self.keyMap[key] = value
+
+    def updateTask(self, task):
+        self.updatePlayer()
+        self.updateCamera()
+
+        self.collTrav.traverse(self.render)
+        for i in range(self.GutsGroundHandler.getNumEntries()):
+            entry = self.GutsGroundHandler.getEntry(i)
+        return task.cont
+
     def move(self, task):
         dt = globalClock.getDt()
         if self.keyMap["left"]:
@@ -86,6 +107,9 @@ class Player(ShowBase):
         if self.keyMap["backwardp2"]:
             self.Casca.setY(self.Casca, 30 * dt)
         
-        return task.cont
+        return task.cont 
+
+
+
 PlayerScript = Player()
 PlayerScript.run()
