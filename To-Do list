@@ -1,6 +1,7 @@
 Welcome TO my To-Do list! 
 
 Necessary: 
+- Visit Calgary
 - Add models here 
 - Upload all the models 
 - Change all the models to .egg files
@@ -13,7 +14,6 @@ Necessary:
 Optional: 
 - Implement Point light
 - Implement Ambient Light
--
 
 Links: 
 -https://bazaar.launchpad.net/~fireclawthefox/panda3dcodecollection/trunk/files
