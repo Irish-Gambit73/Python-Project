@@ -2,18 +2,19 @@ Welcome TO my To-Do list!
 
 Necessary: 
 - Visit Calgary :)))
-- Add models here 
-- Upload all the models 
-- Change all the models to .egg files
 - FSM animations, make animations: Idle, attack, walk (USE BLENDER FIRST AND TRY ANIMATIONS WITH .GLTF)
-- Collisions
-- Add jumping
+- Attack Collisions
 - Gui and menu
 -
 
 Optional: 
 - Implement Point light
-- Implement Ambient Light
+- Implement Ambient Light 
+- Death screen 
+- Pvp mode
+- More than 2 characters
+- Yell move
+- Make a youtube video "Can you beat Revenge on Castle Morde by Only Shouting?"
 
 Links: 
 -https://bazaar.launchpad.net/~fireclawthefox/panda3dcodecollection/trunk/files
