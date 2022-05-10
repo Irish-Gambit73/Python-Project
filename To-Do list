@@ -5,6 +5,7 @@ Necessary:
 - FSM animations, make animations: Idle, attack, walk (USE BLENDER FIRST AND TRY ANIMATIONS WITH .GLTF)
 - Attack Collisions
 - Gui and menu
+- Enemy Ai
 -
 
 Optional: 
