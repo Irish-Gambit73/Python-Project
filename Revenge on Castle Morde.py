@@ -1,8 +1,9 @@
-from turtle import update
+from turtle import delay, update
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData, Vec3
 from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionNode, BitMask32, CollisionSegment, CollisionHandlerEvent, CollisionRay, CollisionParabola
 from panda3d.core import *
+from time import time
 
 configVars = """
 win-size 1280 720
@@ -32,10 +33,10 @@ class Platformer(ShowBase):
         self.cam.setPos(0, -65, 15)
 
         # Guts
-        self.player = self.loader.loadModel("Models/Guts.glb")
+        self.player = self.loader.loadModel("Models/gutstraining.glb")
         self.player.node().setIntoCollideMask(BitMask32.bit(2))
         self.player.reparentTo(self.render)
-        self.player.setScale(1)
+        self.player.setScale(1.5)
         self.player.setHpr(90, 0, 0)
         playerhealth = 100
 
@@ -127,14 +128,17 @@ class Platformer(ShowBase):
         if key_map["left2"]:
             self.accelration.x = self.SPEED * dt
         if key_map["attack"]:
-            attackray = CollisionBox((-5, 5, 0), (1, 1, 6) )
-            attackray_node = CollisionNode("attack-ray")
-            attackray_node.setFromCollideMask(BitMask32.bit(0))
-            attackray_node.addSolid(attackray)
-            attackrayphysical = self.player.attachNewNode(attackray_node)
-            self.cTrav.addCollider(attackrayphysical, self.queue)
-            attackrayphysical.show()
+                start = time() + 5
+                while time() < start:
+                attackray = CollisionBox((-5, -3, 0.4), (1, 1, 6))
+                attackray_node = CollisionNode("attack-ray")
+                attackray_node.setFromCollideMask(BitMask32.bit(0))
+                attackray_node.addSolid(attackray)
+                attackrayphysical = self.player.attachNewNode(attackray_node)
+                self.cTrav.addCollider(attackrayphysical, self.queue)
+                attackrayphysical.show()
 
+                
         # calculating the position vector based on the velocity and the acceleration vectors
         self.acceleration.x += self.velocity.x * self.FRICTION
         self.velocity += self.acceleration
