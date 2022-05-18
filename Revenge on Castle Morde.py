@@ -15,14 +15,12 @@ loadPrcFileData("", configVars)
 key_map = {
     "left": False,
     "right": False,
-    "attack": False,
     "left2": False,
     "right2": False,
 }
 
 
 def update_key_map(control_name, state):
-    """ This function is called when keys are pressed or released. It updates the key_map dict."""
     key_map[control_name] = state
 
 
@@ -36,7 +34,7 @@ class Platformer(ShowBase):
         self.player = self.loader.loadModel("Models/gutstraining.glb")
         self.player.node().setIntoCollideMask(BitMask32.bit(2))
         self.player.reparentTo(self.render)
-        self.player.setScale(1.5)
+        self.player.setScale(1)
         self.player.setHpr(90, 0, 0)
         playerhealth = 100
 
@@ -45,9 +43,11 @@ class Platformer(ShowBase):
         self.floor.reparentTo(self.render)
 
         # Godo
-        self.player2 = self.loader.loadModel("Models/godo.glb")
+        self.player2 = self.loader.loadModel("Models/Godo.glb")
         self.player2.reparentTo(self.render)
         self.player2.setScale(1)
+        self.player2.node().setIntoCollideMask(BitMask32.bit(2))
+        self.player2.setHpr(-90, 0, 0)
         player2health = 100
 
         # keyboard input
@@ -56,47 +56,73 @@ class Platformer(ShowBase):
         self.accept("d", update_key_map, ["right", True])
         self.accept("d-up", update_key_map, ["right", False])
         self.accept("w", self.jump)
-        self.accept("space", update_key_map, ["attack", True])
-        self.accept("space-up", update_key_map, ["attack", False])
+        self.accept("space", self.attack)
         self.accept("l", update_key_map, ["left2", True])
         self.accept("l-up", update_key_map, ["left2", False])
         self.accept("'", update_key_map, ["right2", True])
         self.accept("'-up", update_key_map, ["right2", False])
+        self.accept("p", self.jump2)
 
         # adding the update method to the Task manager
         self.taskMgr.add(self.update, "update")
 
-        # Movement vec's
+        # Movement vec's for player1 and player2
         self.position = Vec3(0, 0, 30)
         self.velocity = Vec3(0, 0, 0)
         self.acceleration = Vec3(0, 0, 0)
 
+        self.position2 = Vec3(0, 0, 30)
+        self.velocity2 = Vec3(0, 0, 0)
+        self.acceleration2 = Vec3(0, 0, 0)
+
         # Movement constants
+        self.islookingleft = False
+        self.islookingright = False
+        self.islookingleft2 = False
+        self.islookingright2 = False
+        
         self.SPEED = 4
         self.GRAVITY = -0.05
         self.JUMP_FORCE = 1.2
         self.FRICTION = -0.12
 
+        self.SPEED2 = 4
+        self.GRAVITY2 = -0.05
+        self.JUMP_FORCE2 = 1.2
+        self.FRICTION2 = -0.12
+
         # Collision detection
         self.cTrav = CollisionTraverser()
         self.queue = CollisionHandlerQueue()
-        # collision node for the Player
         collider_node = CollisionNode("box-coll")
-        # collision geometry for the Player
         coll_box = CollisionBox((-1, -1, 0), (1, 1, 4))
         collider_node.setFromCollideMask(BitMask32.bit(1))
         collider_node.addSolid(coll_box)
         collider = self.player.attachNewNode(collider_node)
         self.cTrav.addCollider(collider, self.queue)
         collider.show()
+        
+        collider_nodep2 = CollisionNode("box-coll")
+        coll_box2 = CollisionBox((-1, -1, 0), (1, 1, 6))
+        collider_nodep2.setFromCollideMask(BitMask32.bit(1))
+        collider_nodep2.addSolid(coll_box2)
+        collider2 = self.player2.attachNewNode(collider_nodep2)
+        self.cTrav.addCollider(collider2, self.queue)
+        collider2.show()
 
         # Jump variables
         self.is_jumping = False
         self.is_on_floor = True
         self.jump_count = 0
 
+        self.is_jumping2 = False
+        self.is_on_floor2 = True
+        self.jump_count2 = 0
+
         # Attack variables
         self.is_attacking = False
+        self.is_attacking2 = False
+        self.is_attacking3 = False
         self.attack_count = 0
         self.is_not_attacking = True
 
@@ -111,6 +137,55 @@ class Platformer(ShowBase):
                 self.is_on_floor = True
                 self.jump_count = 0
 
+    def jump2(self):
+        if self.is_on_floor2:
+            self.is_jumping2 = True
+            self.is_on_floor2 = False
+            self.velocity2.z = self.JUMP_FORCE2
+            self.jump_count2 += 1
+            if self.jump_count2 == 2:
+                self.is_jumping2 = False
+                self.is_on_floor2 = True
+                self.jump_count2 = 0
+
+    def attack(self):
+        self.attack_count += 1
+        self.is_attacking = True
+        if self.is_attacking == True:
+            attackray = CollisionBox((-5, -3, 0.4), (1, 1, 6))
+            attackray_node = CollisionNode("attack-ray")
+            attackray_node.setFromCollideMask(BitMask32.bit(0))
+            attackray_node.addSolid(attackray)
+            attackrayphysical = self.player.attachNewNode(attackray_node)
+            self.cTrav.addCollider(attackrayphysical, self.queue)
+            attackrayphysical.show()
+            attackrayphysical.setPos(2, -2.5, -0.2)
+            if self.attack_count == 2:
+                self.is_attacking = False
+                self.is_attacking2 = True
+                if self.is_attacking2 == True:
+                    attackray = CollisionBox((-5, -3, 0.4), (1, 1, 6))
+                    attackray_node = CollisionNode("attack-ray")
+                    attackray_node.setFromCollideMask(BitMask32.bit(0))
+                    attackray_node.addSolid(attackray)
+                    attackrayphysical = self.player.attachNewNode(attackray_node)
+                    self.cTrav.addCollider(attackrayphysical, self.queue)
+                    attackrayphysical.show()
+                    attackrayphysical.setPos(2, -5, -0.2)
+                    if self.attack_count == 3:
+                        self.is_attacking2 = False
+                        self.is_attacking3 = True
+                        if self.is_attacking3:
+                            attackray = CollisionBox((-5, -3, 0.4), (1, 1, 6))
+                            attackray_node = CollisionNode("attack-ray")
+                            attackray_node.setFromCollideMask(BitMask32.bit(0))
+                            attackray_node.addSolid(attackray)
+                            attackrayphysical = self.player.attachNewNode(attackray_node)
+                            self.cTrav.addCollider(attackrayphysical, self.queue)
+                            attackrayphysical.show()
+                            attackrayphysical.setPos(2, -9, -0.2)
+                            self.is_attacking3 = False
+
     def setEnemy(self, enemyCol):
         self.enemyCol = enemyCol
 
@@ -118,45 +193,57 @@ class Platformer(ShowBase):
         dt = globalClock.getDt()
 
         self.acceleration = Vec3(0, 0, self.GRAVITY)
+        self.acceleration2 = Vec3(0, 0, self.GRAVITY2)
 
         if key_map["right"]:  # if right is True
             self.acceleration.x = self.SPEED * dt
+            self.islookingright
         if key_map["left"]:  # if left is True
             self.acceleration.x = -self.SPEED * dt
+            self.islookingleft = True
         if key_map["right2"]:
-            self.acceleration.x = self.SPEED * dt
+            self.acceleration2.x = self.SPEED2 * dt
+            self.islookingright2 = True
         if key_map["left2"]:
-            self.accelration.x = self.SPEED * dt
-        if key_map["attack"]:
-                start = time() + 5
-                while time() < start:
-                attackray = CollisionBox((-5, -3, 0.4), (1, 1, 6))
-                attackray_node = CollisionNode("attack-ray")
-                attackray_node.setFromCollideMask(BitMask32.bit(0))
-                attackray_node.addSolid(attackray)
-                attackrayphysical = self.player.attachNewNode(attackray_node)
-                self.cTrav.addCollider(attackrayphysical, self.queue)
-                attackrayphysical.show()
+            self.acceleration2.x = -self.SPEED2 * dt
+            self.islookingleft2 = True
 
-                
         # calculating the position vector based on the velocity and the acceleration vectors
         self.acceleration.x += self.velocity.x * self.FRICTION
         self.velocity += self.acceleration
         self.position += self.velocity + (self.acceleration * 0.5)
 
+        self.acceleration2.x += self.velocity2.x * self.FRICTION2
+        self.velocity2 += self.acceleration2
+        self.position2 += self.velocity2 + (self.acceleration2 * 0.5)
+
+
         for entry in self.queue.getEntries():
 
-            inp = entry.getIntoNodePath().getPos(self.render)
+            gravityy = entry.getIntoNodePath().getPos(self.render)
 
             if self.velocity.z < 0:  # prevent snapping to the top of the platforms
                 if not self.is_jumping:
-                    self.position.z = inp.z
+                    self.position.z = gravityy.z
                     self.velocity.z = 0  # prevent fast falling from platforms
                     self.is_on_floor = True
                 else:
                     self.is_jumping = False
 
+        for entry in self.queue.getEntries():
+
+            gravityy2 = entry.getIntoNodePath().getPos(self.render)
+
+            if self.velocity2.z < 0:  # prevent snapping to the top of the platforms
+                if not self.is_jumping2:
+                    self.position2.z = gravityy2.z
+                    self.velocity2.z = 0  # prevent fast falling from platforms
+                    self.is_on_floor2 = True
+                else:
+                    self.is_jumping2 = False
+
         self.player.setPos(self.position)
+        self.player2.setPos(self.position2)
 
         return task.cont
 
