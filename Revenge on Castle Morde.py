@@ -1,9 +1,11 @@
 from turtle import delay, update
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData, Vec3
-from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionNode, BitMask32, CollisionSegment, CollisionHandlerEvent, CollisionRay, CollisionParabola
+from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionNode, BitMask32, CollisionHandler
 from panda3d.core import *
+from direct.task import Task
 from time import time
+import time
 
 configVars = """
 win-size 1280 720
@@ -27,16 +29,16 @@ def update_key_map(control_name, state):
 class Platformer(ShowBase):
     def __init__(self):
         super().__init__()
-        self.set_background_color(0, 0, 0, 1)
+        self.set_background_color(0, 0, 15, 0)
         self.cam.setPos(0, -65, 15)
 
         # Guts
-        self.player = self.loader.loadModel("Models/gutstraining.glb")
+        self.player = self.loader.loadModel("Models/guts21.glb")
         self.player.node().setIntoCollideMask(BitMask32.bit(2))
         self.player.reparentTo(self.render)
         self.player.setScale(1)
-        self.player.setHpr(90, 0, 0)
-        playerhealth = 100
+        self.player.setHpr(80, 0, 0)
+        self.playerhealth = 100
 
         # Flor
         self.floor = self.loader.loadModel("Models/floor")
@@ -47,8 +49,8 @@ class Platformer(ShowBase):
         self.player2.reparentTo(self.render)
         self.player2.setScale(1)
         self.player2.node().setIntoCollideMask(BitMask32.bit(2))
-        self.player2.setHpr(-90, 0, 0)
-        player2health = 100
+        self.player2.setHpr(-80, 0, 0)
+        self.player2health = 100
 
         # keyboard input
         self.accept("a", update_key_map, ["left", True])
@@ -71,7 +73,7 @@ class Platformer(ShowBase):
         self.velocity = Vec3(0, 0, 0)
         self.acceleration = Vec3(0, 0, 0)
 
-        self.position2 = Vec3(0, 0, 30)
+        self.position2 = Vec3(0, 0, 40)
         self.velocity2 = Vec3(0, 0, 0)
         self.acceleration2 = Vec3(0, 0, 0)
 
@@ -94,20 +96,21 @@ class Platformer(ShowBase):
         # Collision detection
         self.cTrav = CollisionTraverser()
         self.queue = CollisionHandlerQueue()
-        collider_node = CollisionNode("box-coll")
-        coll_box = CollisionBox((-1, -1, 0), (1, 1, 4))
+        collider_node = CollisionNode("p1-coll")
+        coll_box = CollisionBox((-1, -1, 0), (1, 1, 6.5))
         collider_node.setFromCollideMask(BitMask32.bit(1))
         collider_node.addSolid(coll_box)
         collider = self.player.attachNewNode(collider_node)
         self.cTrav.addCollider(collider, self.queue)
         collider.show()
-        
-        collider_nodep2 = CollisionNode("box-coll")
+
+        self.queue2 = CollisionHandlerQueue()
+        collider_nodep2 = CollisionNode("p2-coll")
         coll_box2 = CollisionBox((-1, -1, 0), (1, 1, 6))
         collider_nodep2.setFromCollideMask(BitMask32.bit(1))
         collider_nodep2.addSolid(coll_box2)
         collider2 = self.player2.attachNewNode(collider_nodep2)
-        self.cTrav.addCollider(collider2, self.queue)
+        self.cTrav.addCollider(collider2, self.queue2)
         collider2.show()
 
         # Jump variables
@@ -148,43 +151,12 @@ class Platformer(ShowBase):
                 self.is_on_floor2 = True
                 self.jump_count2 = 0
 
-    def attack(self):
-        self.attack_count += 1
+    def attack(self, task):
         self.is_attacking = True
-        if self.is_attacking == True:
-            attackray = CollisionBox((-5, -3, 0.4), (1, 1, 6))
-            attackray_node = CollisionNode("attack-ray")
-            attackray_node.setFromCollideMask(BitMask32.bit(0))
-            attackray_node.addSolid(attackray)
-            attackrayphysical = self.player.attachNewNode(attackray_node)
-            self.cTrav.addCollider(attackrayphysical, self.queue)
-            attackrayphysical.show()
-            attackrayphysical.setPos(2, -2.5, -0.2)
-            if self.attack_count == 2:
-                self.is_attacking = False
-                self.is_attacking2 = True
-                if self.is_attacking2 == True:
-                    attackray = CollisionBox((-5, -3, 0.4), (1, 1, 6))
-                    attackray_node = CollisionNode("attack-ray")
-                    attackray_node.setFromCollideMask(BitMask32.bit(0))
-                    attackray_node.addSolid(attackray)
-                    attackrayphysical = self.player.attachNewNode(attackray_node)
-                    self.cTrav.addCollider(attackrayphysical, self.queue)
-                    attackrayphysical.show()
-                    attackrayphysical.setPos(2, -5, -0.2)
-                    if self.attack_count == 3:
-                        self.is_attacking2 = False
-                        self.is_attacking3 = True
-                        if self.is_attacking3:
-                            attackray = CollisionBox((-5, -3, 0.4), (1, 1, 6))
-                            attackray_node = CollisionNode("attack-ray")
-                            attackray_node.setFromCollideMask(BitMask32.bit(0))
-                            attackray_node.addSolid(attackray)
-                            attackrayphysical = self.player.attachNewNode(attackray_node)
-                            self.cTrav.addCollider(attackrayphysical, self.queue)
-                            attackrayphysical.show()
-                            attackrayphysical.setPos(2, -9, -0.2)
-                            self.is_attacking3 = False
+        
+
+
+
 
     def setEnemy(self, enemyCol):
         self.enemyCol = enemyCol
@@ -197,7 +169,7 @@ class Platformer(ShowBase):
 
         if key_map["right"]:  # if right is True
             self.acceleration.x = self.SPEED * dt
-            self.islookingright
+            self.islookingright = True
         if key_map["left"]:  # if left is True
             self.acceleration.x = -self.SPEED * dt
             self.islookingleft = True
@@ -220,23 +192,23 @@ class Platformer(ShowBase):
 
         for entry in self.queue.getEntries():
 
-            gravityy = entry.getIntoNodePath().getPos(self.render)
+            inp = entry.getIntoNodePath().getPos(self.render)
 
             if self.velocity.z < 0:  # prevent snapping to the top of the platforms
                 if not self.is_jumping:
-                    self.position.z = gravityy.z
+                    self.position.z = inp.z
                     self.velocity.z = 0  # prevent fast falling from platforms
                     self.is_on_floor = True
                 else:
                     self.is_jumping = False
 
-        for entry in self.queue.getEntries():
+        for entry in self.queue2.getEntries():
 
-            gravityy2 = entry.getIntoNodePath().getPos(self.render)
+            inp2 = entry.getIntoNodePath().getPos(self.render)
 
             if self.velocity2.z < 0:  # prevent snapping to the top of the platforms
                 if not self.is_jumping2:
-                    self.position2.z = gravityy2.z
+                    self.position2.z = inp2.z
                     self.velocity2.z = 0  # prevent fast falling from platforms
                     self.is_on_floor2 = True
                 else:
@@ -244,6 +216,8 @@ class Platformer(ShowBase):
 
         self.player.setPos(self.position)
         self.player2.setPos(self.position2)
+
+        self.cam.setX(self.position.x)
 
         return task.cont
 
