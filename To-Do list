@@ -3,7 +3,7 @@ Welcome TO my To-Do list!
 Necessary: 
 - Visit Calgary :)))
 - FSM animations, make animations: Idle, attack, walk (USE BLENDER FIRST AND TRY ANIMATIONS WITH .GLTF)
-- Attack Collisions
+- Attack Collisions (Use CollisionHandlerEvent -> Tasks -> 
 - Gui and menu
 - Enemy Ai
 - Death
