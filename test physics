@@ -2,7 +2,20 @@ Saved code for later:
 
 
 - May 20 22
-if self.attack_count == 2:
+    def attack(self):
+        self.attack_count += 1
+        self.is_attacking = True
+        t_end = time.time() + 3 * 1
+        while time.time() < t_end:
+                self.attackqueue = CollisionHandler
+                attackray = CollisionBox((-5, -3, 0.4), (1, 1, 6))
+                attackray_node = CollisionNode("attack-ray")
+                attackray_node.setFromCollideMask(BitMask32.bit(0))
+                attackray_node.addSolid(attackray)
+                attackrayphysical = self.player.attachNewNode(attackray_node)
+                self.cTrav.addCollider(attackrayphysical, self.attackqueue)
+                attackrayphysical.show()
+                attackrayphysical.setPos(2, -2.5, -0.2)if self.attack_count == 2:
                 self.is_attacking = False
                 self.is_attacking2 = True
                 if self.is_attacking2 == True:
@@ -29,3 +42,4 @@ if self.attack_count == 2:
                             self.is_attacking3 = False
 END
 
+- 
