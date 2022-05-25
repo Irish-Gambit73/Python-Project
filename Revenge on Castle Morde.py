@@ -1,11 +1,11 @@
 from turtle import delay, update
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData, Vec3
-from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionNode, BitMask32, CollisionHandler
+from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionNode, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib
 from panda3d.core import *
 from direct.task import Task
 from time import time
-import time
+import time, os
 
 configVars = """
 win-size 1280 720
@@ -31,6 +31,13 @@ class Platformer(ShowBase):
         super().__init__()
         self.set_background_color(0, 0, 15, 0)
         self.cam.setPos(0, -65, 15)
+
+        self.render.setAntialias(AntialiasAttrib.MAuto)
+        render.setShaderAuto()
+
+        particles = ConfigVariableBool("particles-enabled", True).getValue()
+        if particles:
+            self.enableParticles()
 
         # Guts
         self.player = self.loader.loadModel("Models/guts21.glb")
@@ -65,8 +72,9 @@ class Platformer(ShowBase):
         self.accept("'-up", update_key_map, ["right2", False])
         self.accept("p", self.jump2)
 
-        # adding the update method to the Task manager
+        # taskMgr
         self.taskMgr.add(self.update, "update")
+
 
         # Movement vec's for player1 and player2
         self.position = Vec3(0, 0, 30)
@@ -153,10 +161,11 @@ class Platformer(ShowBase):
 
     def attack(self, task):
         self.is_attacking = True
-        
+        self.task
 
-
-
+    def taketime(task):
+        self.delayTime +=1
+        return task.cont
 
     def setEnemy(self, enemyCol):
         self.enemyCol = enemyCol
