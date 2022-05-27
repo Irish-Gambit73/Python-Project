@@ -42,4 +42,14 @@ Saved code for later:
                             self.is_attacking3 = False
 END
 
-- 
+- March 27/22
+        if self.playerhealth < 0:
+            self.alive = False
+            return task.cont
+
+        if self.playerhealth2 < 0:
+            self.alive2 = False
+            return task.cont
+END
+
+-
