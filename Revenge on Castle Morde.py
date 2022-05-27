@@ -19,8 +19,8 @@ key_map = {
     "right": False,
     "left2": False,
     "right2": False,
+    "space": False,
 }
-
 
 def update_key_map(control_name, state):
     key_map[control_name] = state
@@ -29,11 +29,13 @@ def update_key_map(control_name, state):
 class Platformer(ShowBase):
     def __init__(self):
         super().__init__()
-        self.set_background_color(0, 0, 15, 0)
+        self.set_background_color(0.5, 0.5, 1.5)
         self.cam.setPos(0, -65, 15)
-
+        self.camLens.setFov(50)
+        self.camLens.setNear(0.8)
         self.render.setAntialias(AntialiasAttrib.MAuto)
-        render.setShaderAuto()
+        self.render.setShaderAuto()
+        self.setAi()
 
         particles = ConfigVariableBool("particles-enabled", True).getValue()
         if particles:
@@ -44,20 +46,33 @@ class Platformer(ShowBase):
         self.player.node().setIntoCollideMask(BitMask32.bit(2))
         self.player.reparentTo(self.render)
         self.player.setScale(1)
-        self.player.setHpr(80, 0, 0)
+        self.player.setHpr(90, 0, 0)
         self.playerhealth = 100
+        self.alive = True
 
         # Flor
         self.floor = self.loader.loadModel("Models/floor")
         self.floor.reparentTo(self.render)
 
         # Godo
-        self.player2 = self.loader.loadModel("Models/Godo.glb")
+        self.player2 = self.loader.loadModel("Models/Godot.glb")
         self.player2.reparentTo(self.render)
         self.player2.setScale(1)
         self.player2.node().setIntoCollideMask(BitMask32.bit(2))
-        self.player2.setHpr(-80, 0, 0)
+        self.player2.setHpr(90, 0, 0)
         self.player2health = 100
+        self.alive2 = True
+
+        # Enemy
+        self.enemy1 = self.loader.loadModel("Models/enemy1.glb")
+        self.enemy1.reparentTo(self.render)
+        self.enemy1.setScale(1)
+        self.enemy1.setHpr(-90, 0, 0)
+        self.enemy1health = 50
+        self.enemyisalive = True
+        enemy1startpos = Vec3(-10, 0, 0)
+        self.enemy1.setPos(enemy1startpos)
+
 
         # keyboard input
         self.accept("a", update_key_map, ["left", True])
@@ -74,7 +89,18 @@ class Platformer(ShowBase):
 
         # taskMgr
         self.taskMgr.add(self.update, "update")
+        #AI World update
+        self.taskMgr.add(self.AIUpdate, "AIUpdate")
 
+
+        # Lighting
+        light = Spotlight('light')
+        light_np = self.render.attachNewNode(light)
+        light_np.set_pos(50, 50, 25)
+        light_np.look_at(0, 0, 0)
+        light.setShadowCaster(True)
+        light.getLens().setNearFar(1, 100)
+        self.render.setLight(light_np)
 
         # Movement vec's for player1 and player2
         self.position = Vec3(0, 0, 30)
@@ -121,6 +147,17 @@ class Platformer(ShowBase):
         self.cTrav.addCollider(collider2, self.queue2)
         collider2.show()
 
+        self.queue3 = CollisionHandlerQueue()
+        collider_nodee1 = CollisionNode("e1-coll")
+        coll_boxe1 = CollisionBox((-1.5, -1.5, 0), (1, 2, 8))
+        collider_nodee1.setFromCollideMask(BitMask32.bit(1))
+        collider_nodee1.addSolid(coll_boxe1)
+        collidere1 = self.enemy1.attachNewNode(collider_nodee1)
+        self.cTrav.addCollider(collidere1, self.queue3)
+        collidere1.show()
+
+
+
         # Jump variables
         self.is_jumping = False
         self.is_on_floor = True
@@ -136,6 +173,7 @@ class Platformer(ShowBase):
         self.is_attacking3 = False
         self.attack_count = 0
         self.is_not_attacking = True
+        self.attackcombo = 0.0
 
     def jump(self):
         if self.is_on_floor:
@@ -161,11 +199,22 @@ class Platformer(ShowBase):
 
     def attack(self, task):
         self.is_attacking = True
-        self.task
 
     def taketime(task):
         self.delayTime +=1
         return task.cont
+
+    def setAI(self):
+        #Creating AI World
+        self.AIworld = AIWorld(render)
+
+        self.AIchar = AICharacter("seeker", self.enemy1, 100, 0.05, 5)
+        self.AIworld.addAiChar(self.AIchar)
+        self.AIbehaviors = self.AIchar.getAiBehaviors()
+
+        self.AIbehaviors.seek(self.player1)
+        self.enemy1.loop("run")
+
 
     def setEnemy(self, enemyCol):
         self.enemyCol = enemyCol
@@ -179,15 +228,25 @@ class Platformer(ShowBase):
         if key_map["right"]:  # if right is True
             self.acceleration.x = self.SPEED * dt
             self.islookingright = True
+            self.player.setHpr(90, 0, 0)
         if key_map["left"]:  # if left is True
             self.acceleration.x = -self.SPEED * dt
             self.islookingleft = True
+            self.player.setHpr(-90, 0, 0)
         if key_map["right2"]:
             self.acceleration2.x = self.SPEED2 * dt
             self.islookingright2 = True
+            self.player2.setHpr(90, 0, 0)
         if key_map["left2"]:
             self.acceleration2.x = -self.SPEED2 * dt
             self.islookingleft2 = True
+            self.player2.setHpr(-90, 0, 0)
+        if key_map["space"] and task.time > self.attackcombo:
+            self.attack(task.time)
+            self.attackcombo = task.time + 0.6
+        key_map["space"] = 0
+
+        self.AIworld.update()
 
         # calculating the position vector based on the velocity and the acceleration vectors
         self.acceleration.x += self.velocity.x * self.FRICTION
