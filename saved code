@@ -42,7 +42,7 @@ Saved code for later:
                             self.is_attacking3 = False
 END
 
-- March 27/22
+- May 27/22
         if self.playerhealth < 0:
             self.alive = False
             return task.cont
@@ -52,4 +52,17 @@ END
             return task.cont
 END
 
--
+- May 31/22
+    def setAI(self):
+        #Creating AI World
+        self.AIworld = AIWorld(render)
+
+        self.AIchar = AICharacter("seeker", self.enemy1, 100, 0.05, 5)
+        self.AIworld.addAiChar(self.AIchar)
+        self.AIbehaviors = self.AIchar.getAiBehaviors()
+
+        self.AIbehaviors.seek(self.player1)
+        self.enemy1.loop("run")
+END
+
+- 
