@@ -1,11 +1,12 @@
+from cgi import test
 from turtle import delay, update
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData, Vec3
-from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionNode, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib
+from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionNode, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib, CollisionHandlerPusher
 from panda3d.core import *
 from direct.task import Task
 from time import time
-import time, os
+import time, os, math, sys
 
 configVars = """
 win-size 1280 720
@@ -35,7 +36,6 @@ class Platformer(ShowBase):
         self.camLens.setNear(0.8)
         self.render.setAntialias(AntialiasAttrib.MAuto)
         self.render.setShaderAuto()
-        self.setAi()
 
         particles = ConfigVariableBool("particles-enabled", True).getValue()
         if particles:
@@ -63,7 +63,7 @@ class Platformer(ShowBase):
         self.player2health = 100
         self.alive2 = True
 
-        # Enemy
+        # Enemy1
         self.enemy1 = self.loader.loadModel("Models/enemy1.glb")
         self.enemy1.reparentTo(self.render)
         self.enemy1.setScale(1)
@@ -72,6 +72,7 @@ class Platformer(ShowBase):
         self.enemyisalive = True
         enemy1startpos = Vec3(-10, 0, 0)
         self.enemy1.setPos(enemy1startpos)
+        self.enemy1attackdistance = 1.5
 
 
         # keyboard input
@@ -81,6 +82,8 @@ class Platformer(ShowBase):
         self.accept("d-up", update_key_map, ["right", False])
         self.accept("w", self.jump)
         self.accept("space", self.attack)
+        self.accept("escape", sys.exit)
+        self.accept("m", self.debugme)
         self.accept("l", update_key_map, ["left2", True])
         self.accept("l-up", update_key_map, ["left2", False])
         self.accept("'", update_key_map, ["right2", True])
@@ -89,8 +92,7 @@ class Platformer(ShowBase):
 
         # taskMgr
         self.taskMgr.add(self.update, "update")
-        #AI World update
-        self.taskMgr.add(self.AIUpdate, "AIUpdate")
+
 
 
         # Lighting
@@ -101,6 +103,17 @@ class Platformer(ShowBase):
         light.setShadowCaster(True)
         light.getLens().setNearFar(1, 100)
         self.render.setLight(light_np)
+
+            plight = PointLight("plight")
+    plight.setColor((1, 1, 1, 1))
+    plnp = render.attachNewNode(plight)
+    plnp.setPos(pos[4], pos[5], pos[7])
+    render.setLight(plnp)
+
+    alight = AmbientLight("alight")
+    alight.setColor((0.08, 0.08, 0.08, 1))
+    alnp = render.attachNewNode(alight)
+    render.setLight(alnp)
 
         # Movement vec's for player1 and player2
         self.position = Vec3(0, 0, 30)
@@ -117,44 +130,46 @@ class Platformer(ShowBase):
         self.islookingleft2 = False
         self.islookingright2 = False
         
-        self.SPEED = 4
+        self.SPEED = 5
         self.GRAVITY = -0.05
-        self.JUMP_FORCE = 1.2
-        self.FRICTION = -0.12
+        self.JUMP_FORCE = 1.1
+        self.FRICTION = -0.14
 
-        self.SPEED2 = 4
+        self.SPEED2 = 5
         self.GRAVITY2 = -0.05
-        self.JUMP_FORCE2 = 1.2
-        self.FRICTION2 = -0.12
+        self.JUMP_FORCE2 = 1.1
+        self.FRICTION2 = -0.14
 
         # Collision detection
         self.cTrav = CollisionTraverser()
         self.queue = CollisionHandlerQueue()
-        collider_node = CollisionNode("p1-coll")
+        collider_node = CollisionNode("p1coll")
         coll_box = CollisionBox((-1, -1, 0), (1, 1, 6.5))
         collider_node.setFromCollideMask(BitMask32.bit(1))
         collider_node.addSolid(coll_box)
         collider = self.player.attachNewNode(collider_node)
+        self.pusher = CollisionHandlerPusher()
+        self.pusher.addCollider(collider, self.player)
         self.cTrav.addCollider(collider, self.queue)
-        collider.show()
 
         self.queue2 = CollisionHandlerQueue()
-        collider_nodep2 = CollisionNode("p2-coll")
+        collider_nodep2 = CollisionNode("p2coll")
         coll_box2 = CollisionBox((-1, -1, 0), (1, 1, 6))
         collider_nodep2.setFromCollideMask(BitMask32.bit(1))
         collider_nodep2.addSolid(coll_box2)
         collider2 = self.player2.attachNewNode(collider_nodep2)
+        self.pusher2 = CollisionHandlerPusher()
+        self.pusher2.addCollider(collider2, self.player)
         self.cTrav.addCollider(collider2, self.queue2)
-        collider2.show()
 
         self.queue3 = CollisionHandlerQueue()
-        collider_nodee1 = CollisionNode("e1-coll")
+        collider_nodee1 = CollisionNode("e1coll")
         coll_boxe1 = CollisionBox((-1.5, -1.5, 0), (1, 2, 8))
         collider_nodee1.setFromCollideMask(BitMask32.bit(1))
         collider_nodee1.addSolid(coll_boxe1)
         collidere1 = self.enemy1.attachNewNode(collider_nodee1)
+
         self.cTrav.addCollider(collidere1, self.queue3)
-        collidere1.show()
 
 
 
@@ -174,6 +189,12 @@ class Platformer(ShowBase):
         self.attack_count = 0
         self.is_not_attacking = True
         self.attackcombo = 0.0
+
+        # Collision actions
+        self.pusher.add_in_pattern("%in-into-%in")
+
+        self.accept("p1coll-into-p2coll", self.jump)
+
 
     def jump(self):
         if self.is_on_floor:
@@ -200,20 +221,16 @@ class Platformer(ShowBase):
     def attack(self, task):
         self.is_attacking = True
 
+    def alterhealth(self):
+        pass
+
     def taketime(task):
         self.delayTime +=1
         return task.cont
 
-    def setAI(self):
-        #Creating AI World
-        self.AIworld = AIWorld(render)
+    def debugme(self):
+        self.cTrav.showCollisions(self.render)
 
-        self.AIchar = AICharacter("seeker", self.enemy1, 100, 0.05, 5)
-        self.AIworld.addAiChar(self.AIchar)
-        self.AIbehaviors = self.AIchar.getAiBehaviors()
-
-        self.AIbehaviors.seek(self.player1)
-        self.enemy1.loop("run")
 
 
     def setEnemy(self, enemyCol):
@@ -246,9 +263,7 @@ class Platformer(ShowBase):
             self.attackcombo = task.time + 0.6
         key_map["space"] = 0
 
-        self.AIworld.update()
-
-        # calculating the position vector based on the velocity and the acceleration vectors
+        # Calculating the position vector based on the velocity and the acceleration vectors
         self.acceleration.x += self.velocity.x * self.FRICTION
         self.velocity += self.acceleration
         self.position += self.velocity + (self.acceleration * 0.5)
