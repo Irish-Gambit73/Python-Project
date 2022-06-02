@@ -2,7 +2,7 @@ from cgi import test
 from turtle import delay, update
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData, Vec3
-from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionNode, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib, CollisionHandlerPusher
+from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionNode, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib, CollisionHandlerPusher, CollisionSegment
 from panda3d.core import *
 from direct.task import Task
 from time import time
@@ -35,7 +35,7 @@ class Platformer(ShowBase):
         self.camLens.setFov(50)
         self.camLens.setNear(0.8)
         self.render.setAntialias(AntialiasAttrib.MAuto)
-        self.render.setShaderAuto()
+        render.setShaderAuto()
 
         particles = ConfigVariableBool("particles-enabled", True).getValue()
         if particles:
@@ -49,7 +49,6 @@ class Platformer(ShowBase):
         self.player.setHpr(90, 0, 0)
         self.playerhealth = 100
         self.alive = True
-
         # Flor
         self.floor = self.loader.loadModel("Models/floor")
         self.floor.reparentTo(self.render)
@@ -99,21 +98,21 @@ class Platformer(ShowBase):
         light = Spotlight('light')
         light_np = self.render.attachNewNode(light)
         light_np.set_pos(50, 50, 25)
-        light_np.look_at(0, 0, 0)
+        light_np.look_at(0, 1, 0)
         light.setShadowCaster(True)
         light.getLens().setNearFar(1, 100)
         self.render.setLight(light_np)
 
-            plight = PointLight("plight")
-    plight.setColor((1, 1, 1, 1))
-    plnp = render.attachNewNode(plight)
-    plnp.setPos(pos[4], pos[5], pos[7])
-    render.setLight(plnp)
+        plight = PointLight("plight")
+        plight.setColor((1, 1, 1, 1))
+        plnp = render.attachNewNode(plight)
+        plnp.setPos(0, 65, 15)
+        render.setLight(plnp)
 
-    alight = AmbientLight("alight")
-    alight.setColor((0.08, 0.08, 0.08, 1))
-    alnp = render.attachNewNode(alight)
-    render.setLight(alnp)
+        alight = AmbientLight("alight")
+        alight.setColor((0.08, 0.08, 0.08, 1))
+        alnp = render.attachNewNode(alight)
+        render.setLight(alnp)
 
         # Movement vec's for player1 and player2
         self.position = Vec3(0, 0, 30)
@@ -148,9 +147,17 @@ class Platformer(ShowBase):
         collider_node.setFromCollideMask(BitMask32.bit(1))
         collider_node.addSolid(coll_box)
         collider = self.player.attachNewNode(collider_node)
-        self.pusher = CollisionHandlerPusher()
-        self.pusher.addCollider(collider, self.player)
-        self.cTrav.addCollider(collider, self.queue)
+        base.pusher = CollisionHandlerPusher()
+        base.pusher.addCollider(collider, self.player)
+        base.cTrav.addCollider(collider, self.queue)
+        # Attack Ray
+        attackray = CollisionSegment(0, -6.8, 5, 0, 0, 5)
+        attackray_node = CollisionNode("attackcol")
+        collider_node.addSolid(attackray)
+        attackray_node.setFromCollideMask(BitMask32.bit(0))
+        attackraycollider = self.player.attachNewNode(collider_node)
+        attackraycollider.show()
+
 
         self.queue2 = CollisionHandlerQueue()
         collider_nodep2 = CollisionNode("p2coll")
@@ -158,9 +165,9 @@ class Platformer(ShowBase):
         collider_nodep2.setFromCollideMask(BitMask32.bit(1))
         collider_nodep2.addSolid(coll_box2)
         collider2 = self.player2.attachNewNode(collider_nodep2)
-        self.pusher2 = CollisionHandlerPusher()
-        self.pusher2.addCollider(collider2, self.player)
-        self.cTrav.addCollider(collider2, self.queue2)
+        base.pusher2 = CollisionHandlerPusher()
+        base.pusher2.addCollider(collider2, self.player)
+        base.cTrav.addCollider(collider2, self.queue2)
 
         self.queue3 = CollisionHandlerQueue()
         collider_nodee1 = CollisionNode("e1coll")
