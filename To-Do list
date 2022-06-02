@@ -2,7 +2,7 @@ Welcome TO my To-Do list!
 
 Necessary: 
 - Visit Calgary :)))
-- FSM animations, make animations: Idle, attack, walk (USE BLENDER FIRST AND TRY ANIMATIONS WITH .GLTF)
+- Make animations: Idle, attack, walk https://github.com/fireclawthefox/panda3d-tutorial/blob/master/Panda3D%20Tutorial.pdf
 - Attack Collisions (Use CollisionHandlerEvent -> Tasks -> 
 - Gui and menu
 - Enemy Ai
