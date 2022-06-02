@@ -65,4 +65,23 @@ END
         self.enemy1.loop("run")
 END
 
+- June 2 /22
+def removeCollectible(nodename, parent, removeColNode=True):
+    collisionNode = parent.find("**/%s" % nodename)
+    if collisionNode == -1:
+        return
+    base.cTrav.removeCollider(collisionNode)
+    if removeColNode:
+        collisionNode.removeNode()
+
+
+def cleanupCollisionDetection():
+    logging.debug("Cleanup Collision detection")
+    base.nonphysicsPusher.clearColliders()
+    base.cTrav.clearColliders()
+    # TODO: Check if this was really necessary as it isn't available within p3d files
+    #base.cTrav.clearRecorder()
+   
+END
+
 - 
