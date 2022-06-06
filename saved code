@@ -85,3 +85,10 @@ def cleanupCollisionDetection():
 END
 
 - June 6 /22
+        if self.queue4.getEntries():
+            print("collided")
+        else:
+            print("nocollide")
+END
+
+- 
