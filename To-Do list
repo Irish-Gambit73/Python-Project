@@ -15,8 +15,9 @@ Optional:
 - Pvp mode
 - Yell move
 - Make a youtube video "Can you beat Revenge on Castle Morde by Only Shouting?"
-- Cutscenes (via .mp4 player) Find a berserk compilation montage to edit then import here :)
+- Menu cutscene (via .mp4 player) Find a berserk compilation montage to edit then import here :)
 - Dodge move
+- Implement sound (Menu music, Game: Background noise, music, battle music, attack sounds and footsteps (self.accept for every keyb input-playsound))
 - Finish :/ jk loser 
 
 Links: 
