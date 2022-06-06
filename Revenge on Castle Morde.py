@@ -1,4 +1,4 @@
-from cgi import test
+
 from turtle import delay, update
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData, Vec3
@@ -7,6 +7,7 @@ from panda3d.core import *
 from direct.task import Task
 from time import time
 import time, os, math, sys
+ 
 
 configVars = """
 win-size 1280 720
@@ -27,7 +28,7 @@ def update_key_map(control_name, state):
     key_map[control_name] = state
 
 
-class Platformer(ShowBase):
+class RevengeOnCastleMorde(ShowBase):
     def __init__(self):
         super().__init__()
         self.set_background_color(0.5, 0.5, 1.5)
@@ -46,6 +47,7 @@ class Platformer(ShowBase):
         self.player.node().setIntoCollideMask(BitMask32.bit(2))
         self.player.reparentTo(self.render)
         self.player.setScale(1)
+        self.player.show()
         self.player.setHpr(90, 0, 0)
         self.playerhealth = 100
         self.alive = True
@@ -67,10 +69,10 @@ class Platformer(ShowBase):
         self.enemy1.reparentTo(self.render)
         self.enemy1.setScale(1)
         self.enemy1.setHpr(-90, 0, 0)
-        self.enemy1health = 50
+        self.enemy1health == 50
         self.enemyisalive = True
-        enemy1startpos = Vec3(-10, 0, 0)
-        self.enemy1.setPos(enemy1startpos)
+        enemy1pos = Vec3(-10, 0, 0)
+        self.enemy1.setPos(enemy1pos)
         self.enemy1attackdistance = 1.5
 
 
@@ -80,7 +82,8 @@ class Platformer(ShowBase):
         self.accept("d", update_key_map, ["right", True])
         self.accept("d-up", update_key_map, ["right", False])
         self.accept("w", self.jump)
-        self.accept("space", self.attack)
+        self.accept("space", update_key_map, ["space", True])
+        self.accept("space-up", update_key_map,["space", False])
         self.accept("escape", sys.exit)
         self.accept("m", self.debugme)
         self.accept("l", update_key_map, ["left2", True])
@@ -91,7 +94,6 @@ class Platformer(ShowBase):
 
         # taskMgr
         self.taskMgr.add(self.update, "update")
-
 
 
         # Lighting
@@ -147,17 +149,17 @@ class Platformer(ShowBase):
         collider_node.setFromCollideMask(BitMask32.bit(1))
         collider_node.addSolid(coll_box)
         collider = self.player.attachNewNode(collider_node)
-        base.pusher = CollisionHandlerPusher()
-        base.pusher.addCollider(collider, self.player)
-        base.cTrav.addCollider(collider, self.queue)
+        self.cTrav.addCollider(collider, self.queue)
+        
         # Attack Ray
-        attackray = CollisionSegment(0, -6.8, 5, 0, 0, 5)
+        self.queue4 = CollisionHandlerQueue()
+        attackray = CollisionSegment(0, -6.8, 5, -5, 0, 5)
         attackray_node = CollisionNode("attackcol")
-        collider_node.addSolid(attackray)
-        attackray_node.setFromCollideMask(BitMask32.bit(0))
-        attackraycollider = self.player.attachNewNode(collider_node)
+        attackray_node.setIntoCollideMask(BitMask32.bit(0))
+        attackray_node.addSolid(attackray)
+        attackraycollider = self.player.attachNewNode(attackray_node)
+        self.cTrav.addCollider(attackraycollider, self.queue4)
         attackraycollider.show()
-
 
         self.queue2 = CollisionHandlerQueue()
         collider_nodep2 = CollisionNode("p2coll")
@@ -165,9 +167,16 @@ class Platformer(ShowBase):
         collider_nodep2.setFromCollideMask(BitMask32.bit(1))
         collider_nodep2.addSolid(coll_box2)
         collider2 = self.player2.attachNewNode(collider_nodep2)
-        base.pusher2 = CollisionHandlerPusher()
-        base.pusher2.addCollider(collider2, self.player)
-        base.cTrav.addCollider(collider2, self.queue2)
+        self.cTrav.addCollider(collider2, self.queue2)
+
+        self.queue5 = CollisionHandlerQueue()
+        attackray2 = CollisionSegment(0, -6.8, 5, -5, 0, 5)
+        attackray_node2 = CollisionNode("attackcol2")
+        attackray_node2.setIntoCollideMask(BitMask32.bit(0))
+        attackray_node2.addSolid(attackray2)
+        attackraycollider2 = self.player2.attachNewNode(attackray_node2)
+        self.cTrav.addCollider(attackraycollider2, self.queue5)
+        attackraycollider2.show()
 
         self.queue3 = CollisionHandlerQueue()
         collider_nodee1 = CollisionNode("e1coll")
@@ -175,9 +184,14 @@ class Platformer(ShowBase):
         collider_nodee1.setFromCollideMask(BitMask32.bit(1))
         collider_nodee1.addSolid(coll_boxe1)
         collidere1 = self.enemy1.attachNewNode(collider_nodee1)
-
         self.cTrav.addCollider(collidere1, self.queue3)
 
+        if self.playerhealth < 0:
+            self.gamelose
+        if self.player2health < 0:
+            self.gamelose
+        if self.enemy1health < 0:
+            self.enemydeath
 
 
         # Jump variables
@@ -197,11 +211,14 @@ class Platformer(ShowBase):
         self.is_not_attacking = True
         self.attackcombo = 0.0
 
-        # Collision actions
-        self.pusher.add_in_pattern("%in-into-%in")
 
-        self.accept("p1coll-into-p2coll", self.jump)
+    def gamelose(self):
+        self.mainmenulaunch
 
+    def mainmenulaunch(self):
+        #play a "YOU DIED" then close the application and reopen the menu
+        sys.exit
+        menu.run()
 
     def jump(self):
         if self.is_on_floor:
@@ -225,23 +242,12 @@ class Platformer(ShowBase):
                 self.is_on_floor2 = True
                 self.jump_count2 = 0
 
-    def attack(self, task):
-        self.is_attacking = True
-
-    def alterhealth(self):
-        pass
-
     def taketime(task):
         self.delayTime +=1
         return task.cont
 
     def debugme(self):
         self.cTrav.showCollisions(self.render)
-
-
-
-    def setEnemy(self, enemyCol):
-        self.enemyCol = enemyCol
 
     def update(self, task):
         dt = globalClock.getDt()
@@ -265,10 +271,11 @@ class Platformer(ShowBase):
             self.acceleration2.x = -self.SPEED2 * dt
             self.islookingleft2 = True
             self.player2.setHpr(-90, 0, 0)
-        if key_map["space"] and task.time > self.attackcombo:
-            self.attack(task.time)
-            self.attackcombo = task.time + 0.6
-        key_map["space"] = 0
+        if key_map["space"]:
+            #slashing
+            if self.queue4.getEntries():
+                print("yahoo")
+                self.enemy1health - 10
 
         # Calculating the position vector based on the velocity and the acceleration vectors
         self.acceleration.x += self.velocity.x * self.FRICTION
@@ -312,5 +319,8 @@ class Platformer(ShowBase):
         return task.cont
 
 
-game = Platformer()
+    def enemydeath(self):
+        print("me ded")
+
+game = RevengeOnCastleMorde()
 game.run()
