@@ -3,24 +3,21 @@ Welcome TO my To-Do list!
 Necessary: 
 - Visit Calgary :)))
 - Make animations: Idle, attack, walk https://github.com/fireclawthefox/panda3d-tutorial/blob/master/Panda3D%20Tutorial.pdf
-- Attack Collisions (Use CollisionHandlerEvent -> Tasks -> 
-- Gui and menu
-- Enemy Ai
-- Death
-- Create a map, I'm thinking ggggggg like the endless horde map and a campaign map. Setting is gothic/darksouls, burning houses and castle crashers 1600's Midwest Europe
+- Gui and menu (Menu.py and healthbars)
+- Enemy Ai (Pathfinding, attacks)
+- Death (Ez doing it rn, upon death, sys.exit and launch the main menu; but not before the signature "YOU DIED" for 4 seconds)
+- Create a map (Castlevenia)
+- Fix that lighting
+- Enemy1 damage input
+- 
 
-Suggestions: 
-- Look up more stuff to add from the "Code of a very basic Python game"
-
-Optional: 
-- Implement Point light
-- Implement Ambient Light 
-- Death screen 
+Optional:
 - Pvp mode
-- More than 2 characters
 - Yell move
 - Make a youtube video "Can you beat Revenge on Castle Morde by Only Shouting?"
-- Cutscenes (via .mp4 player)
+- Cutscenes (via .mp4 player) Find a berserk compilation montage to edit then import here :)
+- Dodge move
+- Finish :/ jk loser 
 
 Links: 
 -https://bazaar.launchpad.net/~fireclawthefox/panda3dcodecollection/trunk/files
