@@ -9,7 +9,7 @@ Necessary:
 - Create a map (Castlevenia)
 - Fix that lighting
 - Enemy1 damage input
-- 
+- Attack col: use event system (self.accept)
 
 Optional:
 - Pvp mode
