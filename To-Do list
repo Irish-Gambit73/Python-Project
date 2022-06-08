@@ -9,7 +9,7 @@ Necessary:
 - Create a map (Castlevenia)
 - Fix that lighting
 - Enemy1 damage input
-- Attack col: use event system (self.accept)
+- Attack col: use event system (self.accept) https://docs.panda3d.org/1.10/python/programming/collision-detection/collision-handlers
 
 Optional:
 - Pvp mode
