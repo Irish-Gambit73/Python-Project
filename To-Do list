@@ -7,7 +7,6 @@ Necessary:
 - Enemy Ai (Pathfinding, attacks)
 - Death (Ez doing it rn, upon death, sys.exit and launch the main menu; but not before the signature "YOU DIED" for 4 seconds)
 - Create a map (Castlevenia)
-- Fix that lighting
 - Enemy1 damage input
 - Attack col: use event system (self.accept) https://docs.panda3d.org/1.10/python/programming/collision-detection/collision-handlers
 
