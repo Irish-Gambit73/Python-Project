@@ -4,11 +4,13 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData, Vec3
 from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionHandlerEvent, CollisionNode, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib, CollisionHandlerPusher, CollisionSegment
 from panda3d.core import *
+from panda3d.ai import *
+from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence, Func, Wait
 from direct.task import Task
 from time import time
 import time, os, math, sys
- 
+
 
 configVars = """
 win-size 1280 720
@@ -32,7 +34,7 @@ class RevengeOnCastleMorde(ShowBase):
     def __init__(self):
         super().__init__()
         self.set_background_color(0.5, 0.5, 1.5)
-        self.cam.setPos(0, -65, 15)
+        self.cam.setPos(-5, -65, 15)
         self.camLens.setFov(50)
         self.camLens.setNear(0.8)
         self.render.setAntialias(AntialiasAttrib.MAuto)
@@ -123,13 +125,18 @@ class RevengeOnCastleMorde(ShowBase):
         plnp = render.attachNewNode(plight)
         plnp.look_at(0, 0, -1)
         plnp.setPos(0, 0, 6)
-        render.setLight(plnp)
+        self.render.setLight(plnp)
 
         alight = AmbientLight("alight")
         alight.setColor((0.08, 0.08, 0.08, 1))
         alnp = render.attachNewNode(alight)
         alnp.set_pos(0, 0, 3)
-        render.setLight(alnp)
+        self.render.setLight(alnp)
+
+        expfog = Fog("scene-wide-fog")
+        expfog.setColor(0, 0, 0)
+        expfog.setExpDensity(0.004)
+        self.render.setFog(expfog)
 
         # Movement vec's for player1 and player2
         self.position = Vec3(0, 0, 30)
@@ -158,10 +165,6 @@ class RevengeOnCastleMorde(ShowBase):
 
         #Collisions                                  ----------------------------------------------------------------------------
         self.collCount = 0
-
-        self.collHandEvent = CollisionHandlerEvent()
-        self.collHandEvent.addInPattern('into-%in')
-        self.collHandEvent.addOutPattern('outof-%in')
 
         # P1 Collision
         self.cTrav = CollisionTraverser()
@@ -222,11 +225,11 @@ class RevengeOnCastleMorde(ShowBase):
         self.cTrav.addCollider(collidere2, self.queue102)
 
 
-
-
         #                                          -------------------------------------------------------
 
         if self.playerhealth < 0:
+            self.gamelose
+        if (self.player.getY() > -4):
             self.gamelose
         if self.player2health < 0:
             self.gamelose
@@ -249,37 +252,30 @@ class RevengeOnCastleMorde(ShowBase):
         self.is_not_attacking = True
         self.attackcombo = 0.0
 
-    def bumpInto(self):
-        print("Player1hasbumpedinto")
+        self.AIworld = AIWorld(render)
 
-    def exitOutTo(self):
-        print("Player1hasnaybequeathbumpingintoeth")
+        self.AIchar = AICharacter("enemy1", self.enemy1, 100, 0.05, 5)
+        self.AIworld.addAiChar(self.AIchar)
+        self.AIbehaviors = self.AIchar.getAiBehaviors()
 
-    def bumpInto2(self):
-        print("Player2hasbumpedintosomething")
+        self.AIbehaviors.pursue(self.player)
+        self.AIworld.addObstacle(self.enemy2)
 
-    def exitOutTo(self):
-        print("Player2hasnaybequeathbumpingintoeth")
+
+
 
     #If player damage > 1000 ie.   , then skip to next round
     def beginround(self):
         round = 1
-        if round == 1:
-            self.enemy1
-
-
 
     def gamelose(self):
         self.mainmenulaunch
         #play a "YOU DIED" then close the application and reopen the menu
+        print("YOUDIED")
 
     def mainmenulaunch(self):
         sys.exit
         menu.run()
-
-    def enemydeath(self):
-        #afterdeath, move it back to the spawner for reuse
-        del enemy1
 
     def jump(self):
         if self.is_on_floor:
@@ -318,6 +314,7 @@ class RevengeOnCastleMorde(ShowBase):
 
         self.acceleration = Vec3(0, 0, self.GRAVITY)
         self.acceleration2 = Vec3(0, 0, self.GRAVITY2)
+        self.acceleratione1 = Vec3(0, 0, self.GRAVITY)
 
         if key_map["right"]:  # if right is True
             self.acceleration.x = self.SPEED * dt
@@ -345,6 +342,8 @@ class RevengeOnCastleMorde(ShowBase):
                     self.enemydeath
 
         # Calculating the position vector based on the velocity and the acceleration vectors
+        self.enemy1Pos = acceleration + self.gravity
+
         self.acceleration.x += self.velocity.x * self.FRICTION
         self.velocity += self.acceleration
         self.position += self.velocity + (self.acceleration * 0.5)
@@ -352,7 +351,6 @@ class RevengeOnCastleMorde(ShowBase):
         self.acceleration2.x += self.velocity2.x * self.FRICTION2
         self.velocity2 += self.acceleration2
         self.position2 += self.velocity2 + (self.acceleration2 * 0.5)
-
 
         for entry in self.queue.getEntries():
 
@@ -382,6 +380,8 @@ class RevengeOnCastleMorde(ShowBase):
         self.player2.setPos(self.position2)
 
         self.cam.setX(self.position.x)
+        self.AIworld.update()
+
 
         return task.cont
 
