@@ -5,12 +5,18 @@ from panda3d.core import loadPrcFileData, Vec3
 from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionHandlerEvent, CollisionNode, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib, CollisionHandlerPusher, CollisionSegment
 from panda3d.core import *
 from panda3d.ai import *
+from direct.interval.IntervalGlobal import *
 from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence, Func, Wait
 from direct.task import Task
 from time import time
 import time, os, math, sys
 
+
+# Welcome TO my game! The objective of the game is to catch the AI that has the sole goal of running from the player(s) until the timer runs out. 
+# To catch the AI, players must use movement to close the distance and attack to eliminate the AI within the time limit
+# After catching the AI, players will face increasingly difficult Ai to catch, as the AI will have increasing speed, numbers, shorter time constraints, and
+# the arena will be a much more hostile place. 
 
 configVars = """
 win-size 1280 720
@@ -39,6 +45,7 @@ class RevengeOnCastleMorde(ShowBase):
         self.camLens.setNear(0.8)
         self.render.setAntialias(AntialiasAttrib.MAuto)
         render.setShaderAuto()
+        #self.disableMouse()
 
         round = 0
 
@@ -76,8 +83,6 @@ class RevengeOnCastleMorde(ShowBase):
         self.enemy1.setHpr(-90, 0, 0)
         self.enemy1health = 50
         self.enemyisalive = True
-        enemy1pos = Vec3(-10, 0, 0)
-        self.enemy1.setPos(enemy1pos)
         self.enemy1attackdistance = 1.5
 
         # Enemy2
@@ -100,6 +105,7 @@ class RevengeOnCastleMorde(ShowBase):
         self.accept("space", update_key_map, ["space", True])
         self.accept("space-up", update_key_map,["space", False])
         self.accept("escape", sys.exit)
+        self.accept("tab", self.pausemenu)
         self.accept("m", self.debugme)
         self.accept("l", update_key_map, ["left2", True])
         self.accept("l-up", update_key_map, ["left2", False])
@@ -147,12 +153,17 @@ class RevengeOnCastleMorde(ShowBase):
         self.velocity2 = Vec3(0, 0, 0)
         self.acceleration2 = Vec3(0, 0, 0)
 
+
+        self.positione1 = Vec3(-12, 0, 25)
+        self.velocitye1 = Vec3(0, 0, 0)
+
         # Movement constants
         self.islookingleft = False
         self.islookingright = False
         self.islookingleft2 = False
         self.islookingright2 = False
-        
+        self.enemy1wontleaveZaxis = False
+
         self.SPEED = 5
         self.GRAVITY = -0.05
         self.JUMP_FORCE = 1.1
@@ -162,6 +173,9 @@ class RevengeOnCastleMorde(ShowBase):
         self.GRAVITY2 = -0.05
         self.JUMP_FORCE2 = 1.1
         self.FRICTION2 = -0.14
+
+        self.SPEED3 = 4
+        self.GRAVITY3 = -0.05
 
         #Collisions                                  ----------------------------------------------------------------------------
         self.collCount = 0
@@ -175,7 +189,6 @@ class RevengeOnCastleMorde(ShowBase):
         collider_node.addSolid(coll_box)
         collider = self.player.attachNewNode(collider_node)
         self.cTrav.addCollider(collider, self.queue)
-        
         # P1 Attack Coll. Ray
         self.queue4 = CollisionHandlerQueue()
         attackray = CollisionSegment(0, -6.8, 5, -5, 0, 5)
@@ -194,8 +207,6 @@ class RevengeOnCastleMorde(ShowBase):
         collider_nodep2.addSolid(coll_box2)
         collider2 = self.player2.attachNewNode(collider_nodep2)
         self.cTrav.addCollider(collider2, self.queue2)
-
-
         # P2 Attack Coll. ray
         self.queue5 = CollisionHandlerQueue()
         attackray2 = CollisionSegment(0, -6.8, 5, -5, 0, 5)
@@ -224,58 +235,73 @@ class RevengeOnCastleMorde(ShowBase):
         collidere2 = self.enemy2.attachNewNode(collider_nodee2)
         self.cTrav.addCollider(collidere2, self.queue102)
 
-
         #                                          -------------------------------------------------------
 
         if self.playerhealth < 0:
-            self.gamelose
-        if (self.player.getY() > -4):
-            self.gamelose
+            self.gamelose()
         if self.player2health < 0:
-            self.gamelose
-
+            self.gamelose()
 
         # Jump variables
         self.is_jumping = False
         self.is_on_floor = True
         self.jump_count = 0
-
         self.is_jumping2 = False
         self.is_on_floor2 = True
         self.jump_count2 = 0
 
-        # Attack variables
-        self.is_attacking = False
-        self.is_attacking2 = False
-        self.is_attacking3 = False
-        self.attack_count = 0
-        self.is_not_attacking = True
-        self.attackcombo = 0.0
-
+        # Enemy AI
         self.AIworld = AIWorld(render)
 
         self.AIchar = AICharacter("enemy1", self.enemy1, 100, 0.05, 5)
         self.AIworld.addAiChar(self.AIchar)
         self.AIbehaviors = self.AIchar.getAiBehaviors()
-
-        self.AIbehaviors.pursue(self.player)
+# \ = panic distance  / = relax dis         \   /     
+        self.AIbehaviors.evade(self.player, 20, 0)
+        self.AIbehaviors.obstacleAvoidance(0.3)
         self.AIworld.addObstacle(self.enemy2)
 
 
 
-
-    #If player damage > 1000 ie.   , then skip to next round
+    # IF player(s) have caught escaper, setPos(startingPos) and reload everything. Countdown, new round begin load new factors data
     def beginround(self):
         round = 1
+        self.countdown()
+        if (round == 2):
+            round = 2
+            self.countdown()
+            self.player.setPos(-10, 0, 30)
+            self.player2.setPos(10, 0, 30)
+            self.enemy1.setPos(0, 0, 10)
+            self.enemy1.show()
+
+    def countdown(self):
+        print("Countdown")
+        self.intervalstart(1, 3.5, 1)
+        self.SPEED = 0
+        self.SPEED2 = 0
+        self.SPEED3 = 0
+        if self.interval.finish():
+            self.SPEED = 5
+            self.SPEED2 = 5
+            self.SPEED3 = 4
 
     def gamelose(self):
-        self.mainmenulaunch
-        #play a "YOU DIED" then close the application and reopen the menu
         print("YOUDIED")
+        self.intervalstart(1, 5, 1)
+        #"YOU DIED" goes here
+        if self.interval.finish():
+            self.mainmenulaunch()
+            sys.exit()
 
     def mainmenulaunch(self):
-        sys.exit
+        menu = mymenu()
         menu.run()
+        sys.exit
+
+    def pausemenu(self):
+        self.enableMouse
+        #More buttons here
 
     def jump(self):
         if self.is_on_floor:
@@ -299,12 +325,16 @@ class RevengeOnCastleMorde(ShowBase):
                 self.is_on_floor2 = True
                 self.jump_count2 = 0
 
-    def taketime(task):
-        self.delayTime +=1
-        return task.cont
+    def enemy1cannotleaveZaxis(self):
+        enemy1wontleaveZaxis = True
+        while (enemy1wontleaveZaxis == True):
+            self.enemy1.getZ = 0
 
-    def enemyhit(self):
-        print("HITSUCC")
+    def enemydeath(self):
+        print("E1 HAS DIED2")
+        self.round = +1
+        self.enemy1.hide()
+        #can do self.loader.loadModel(bloodgushing.png) and attachNode(enemy1) as a special effect
 
     def debugme(self):
         self.cTrav.showCollisions(self.render)
@@ -314,7 +344,7 @@ class RevengeOnCastleMorde(ShowBase):
 
         self.acceleration = Vec3(0, 0, self.GRAVITY)
         self.acceleration2 = Vec3(0, 0, self.GRAVITY2)
-        self.acceleratione1 = Vec3(0, 0, self.GRAVITY)
+        self.acceleratione1 = Vec3(0, 0, self.GRAVITY3)
 
         if key_map["right"]:  # if right is True
             self.acceleration.x = self.SPEED * dt
@@ -339,10 +369,13 @@ class RevengeOnCastleMorde(ShowBase):
                 self.enemy1health = (self.enemy1health - 10)
                 if self.enemy1health < 0:
                     print("E1DEATH")
-                    self.enemydeath
+                    self.enemydeath()
 
         # Calculating the position vector based on the velocity and the acceleration vectors
-        self.enemy1Pos = acceleration + self.gravity
+        self.acceleratione1.x += self.velocitye1.x * self.FRICTION2
+        self.velocitye1 += self.acceleratione1
+        self.positione1 += self.velocitye1 + (self.acceleratione1 * 0.5)
+        self.acceleratione1.x = self.SPEED3 * dt
 
         self.acceleration.x += self.velocity.x * self.FRICTION
         self.velocity += self.acceleration
@@ -368,16 +401,25 @@ class RevengeOnCastleMorde(ShowBase):
 
             inp2 = entry.getIntoNodePath().getPos(self.render)
 
-            if self.velocity2.z < 0:  # prevent snapping to the top of the platforms
+            if self.velocity2.z < 0:
                 if not self.is_jumping2:
                     self.position2.z = inp2.z
-                    self.velocity2.z = 0  # prevent fast falling from platforms
+                    self.velocity2.z = 0
                     self.is_on_floor2 = True
                 else:
                     self.is_jumping2 = False
 
+        for entry in self.queue101.getEntries():
+
+            inp3 = entry.getIntoNodePath().getPos(self.render)
+
+            if self.velocitye1.z < 0:
+                    self.positione1.z = inp3.z
+                    self.velocitye1.z = 0
+
         self.player.setPos(self.position)
         self.player2.setPos(self.position2)
+        self.enemy1.setPos(self.positione1)
 
         self.cam.setX(self.position.x)
         self.AIworld.update()
