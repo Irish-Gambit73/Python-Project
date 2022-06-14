@@ -6,8 +6,7 @@ Necessary:
 - Gui and menu (Menu.py and healthbars)
 - Enemy Ai (Pathfinding, attacks)
 - Death (Ez doing it rn, upon death, sys.exit and launch the main menu; but not before the signature "YOU DIED" for 4 seconds)
-- Create a map (Castlevenia)
-- Enemy1 damage input
+- Create an arena (Castlevenia)
 - Attack col: use event system (self.accept) https://docs.panda3d.org/1.10/python/programming/collision-detection/collision-handlers
 - Put a pit below the arena that if collided with a player, will kill (YOU DIED) sys.exit
 - KeyMap[Tab] for opening menu (WILL NOT PAUSE GAME) make sure to have base.disableMouse as default and if KeyMap[Tab] enable mouse
@@ -21,6 +20,7 @@ Optional:
 - Implement sound (Menu music, Game: Background noise, music, battle music, attack sounds and footsteps (self.accept for every keyb input-playsound))
 - Take Tutorial option in menu
 - Speed consumable that (if): collided with (queue 201) will reduce FRICTION variable for a limited time or permanently. Give this aibehavioursWander
+- On (def beginnewround): , maybe add a .png of people cheering as a vignette at setPos(near the camera)
 - Hostile pursuer(self.player) who, if collided with (queue 101) will reduce the player health
 - Finish :/ jk loser 
 
