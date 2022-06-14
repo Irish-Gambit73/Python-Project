@@ -6,9 +6,13 @@ Necessary:
 - Gui and menu (Menu.py and healthbars)
 - Create an arena (Castlevenia)
 - Collisions and loaders for traps, fire, lava
+-
+
+Necessary Little: 
+- Fix Ai's z movement (why does it still want to go on z axis)
+- Fix Lighting (shadowcasting why is everything black)
+- Import that apostle creature to Models/
 - Put a pit below the arena that if collided with a player, will kill (YOU DIED) sys.exit
-- KeyMap[Tab] for opening menu (WILL NOT PAUSE GAME) make sure to have base.disableMouse as default and if KeyMap[Tab] enable mouse
-- Fix Ai's z movement why does it still want to go on z axis
 
 Optional:
 - Pvp mode
@@ -28,7 +32,6 @@ Thoughts:
 - Let flee(self.player) phase through platforms but not arena walls. BC flee'er is not as fast as players and there's usually two 
 - Make sure evaders and AI cannot use Z to phase through the walls. Add collisions or disable all .z movement
 - Might want to change enemy1 collisionBox to enemy1 collisionSphere
-- 
 
 Links: 
 -https://bazaar.launchpad.net/~fireclawthefox/panda3dcodecollection/trunk/files
