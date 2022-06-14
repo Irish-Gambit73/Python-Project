@@ -9,6 +9,8 @@ Necessary:
 - Create a map (Castlevenia)
 - Enemy1 damage input
 - Attack col: use event system (self.accept) https://docs.panda3d.org/1.10/python/programming/collision-detection/collision-handlers
+- Put a pit below the arena that if collided with a player, will kill (YOU DIED) sys.exit
+- 
 
 Optional:
 - Pvp mode
@@ -18,7 +20,12 @@ Optional:
 - Dodge move
 - Implement sound (Menu music, Game: Background noise, music, battle music, attack sounds and footsteps (self.accept for every keyb input-playsound))
 - Take Tutorial option in menu
+- Speed consumable that (if): collided with (queue 201) will reduce FRICTION variable for a limited time or permanently
+- Hostile pursuer(self.player) who, if collided with (queue 101) will reduce the player health
 - Finish :/ jk loser 
+
+Thoughts:
+- Let flee(self.player) phase through platforms but not arena walls. BC flee'er is not as fast as players and there's usually two 
 
 Links: 
 -https://bazaar.launchpad.net/~fireclawthefox/panda3dcodecollection/trunk/files
