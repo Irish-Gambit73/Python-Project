@@ -4,11 +4,11 @@ Necessary:
 - Visit Calgary :)))
 - Make animations: Idle, attack, walk https://github.com/fireclawthefox/panda3d-tutorial/blob/master/Panda3D%20Tutorial.pdf
 - Gui and menu (Menu.py and healthbars)
-- Death (Ez doing it rn, upon death, sys.exit and launch the main menu; but not before the signature "YOU DIED" for 4 seconds)
 - Create an arena (Castlevenia)
+- Collisions and loaders for traps, fire, lava
 - Put a pit below the arena that if collided with a player, will kill (YOU DIED) sys.exit
 - KeyMap[Tab] for opening menu (WILL NOT PAUSE GAME) make sure to have base.disableMouse as default and if KeyMap[Tab] enable mouse
-- 
+- Fix Ai's z movement why does it still want to go on z axis
 
 Optional:
 - Pvp mode
@@ -16,6 +16,7 @@ Optional:
 - Make a youtube video "Can you beat Revenge on Castle Morde by Only Shouting?"
 - Menu cutscene (via .mp4 player) Find a berserk compilation montage to edit then import here :)
 - Dodge move
+- Tutorial level via menu
 - Implement sound (Menu music, Game: Background noise, music, battle music, attack sounds and footsteps (self.accept for every keyb input-playsound))
 - Take Tutorial option in menu
 - Speed consumable that (if): collided with (queue 201) will reduce FRICTION variable for a limited time or permanently. Give this aibehavioursWander
@@ -25,6 +26,9 @@ Optional:
 
 Thoughts:
 - Let flee(self.player) phase through platforms but not arena walls. BC flee'er is not as fast as players and there's usually two 
+- Make sure evaders and AI cannot use Z to phase through the walls. Add collisions or disable all .z movement
+- Might want to change enemy1 collisionBox to enemy1 collisionSphere
+- 
 
 Links: 
 -https://bazaar.launchpad.net/~fireclawthefox/panda3dcodecollection/trunk/files
