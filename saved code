@@ -91,4 +91,21 @@ END
             print("nocollide")
 END
 
-- 
+- June 16
+    def countdown(self):
+        print("Countdown")
+        interval.start(1, 3.5, 1)
+        self.SPEED = 0
+        self.SPEED2 = 0
+        self.SPEED3 = 0
+        if self.interval.finish():
+            self.SPEED = 5
+            self.SPEED2 = 5
+            self.SPEED3 = 4
+                def gamelose(self):
+        print("YOUDIED")
+        self.interval.start(1, 5, 1)
+        #"YOU DIED" goes here
+        if self.interval.finish():
+            self.mainmenulaunch()
+            sys.exit()
