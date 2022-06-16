@@ -6,7 +6,7 @@ Necessary:
 - Gui and menu (Menu.py and healthbars)
 - Create an arena (Castlevenia)
 - Collisions and loaders for traps, fire, lava
--
+- Install YABEE and blender 2.7 for converting .glb files into .egg files. Need this for collisions
 
 Necessary Little: 
 - Fix Ai's z movement (why does it still want to go on z axis)
