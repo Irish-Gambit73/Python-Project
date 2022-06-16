@@ -109,3 +109,24 @@ END
         if self.interval.finish():
             self.mainmenulaunch()
             sys.exit()
+    # IF player(s) have caught escaper, setPos(startingPos) and reload everything. Countdown, new round begin load new factors data
+    def beginround(self):
+        self.round = 1
+        self.player.setPos(-10, 0, 30)
+        self.player2.setPos(10, 0, 30)
+        self.enemy1.setPos(0, 0, 10)
+        self.enemy1.show()
+        if self.round == 2:
+            self.round = 2
+            self.player.setPos(-10, 0, 30)
+            self.player2.setPos(10, 0, 30)
+            self.enemy1.setPos(0, 0, 10)
+            self.enemy1.show()
+            if self.round == 3:
+                self.player.setPos(-10, 0, 30)
+                self.player2.setPos(10, 0, 30)
+                self.enemy1.setPos(0, 0, 10)
+                self.enemy1.show()
+            
+   END
+- 
