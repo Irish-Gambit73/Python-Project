@@ -1,11 +1,12 @@
 from multiprocessing.connection import wait
 from turtle import delay, update
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFileData, Vec3
+from panda3d.core import loadPrcFileData, Vec3, Fog
 from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionHandlerEvent, CollisionNode, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib, CollisionHandlerPusher, CollisionSegment
 from panda3d.core import *
 from panda3d.ai import *
 from direct.interval.IntervalGlobal import *
+
 from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence, Func, Wait
 from direct.task import Task
@@ -16,7 +17,7 @@ import time, os, math, sys
 # Welcome TO my game! The objective of the game is to catch the AI that has the sole goal of running from the player(s) until the timer runs out. 
 # To catch the AI, players must use movement to close the distance and attack to eliminate the AI within the time limit
 # After catching the AI, players will face increasingly difficult Ai to catch, as the AI will have increasing speed, numbers, shorter time constraints, and
-# the arena will be a much more hostile place. 
+# the arena will be a much more hostile place.
 
 configVars = """
 win-size 1280 720
@@ -47,7 +48,8 @@ class RevengeOnCastleMorde(ShowBase):
         render.setShaderAuto()
         #self.disableMouse()
 
-        round = 0
+        self.round = 0
+        self.roundadder = 1
 
         particles = ConfigVariableBool("particles-enabled", True).getValue()
         if particles:
@@ -96,6 +98,11 @@ class RevengeOnCastleMorde(ShowBase):
         self.enemy2.setPos(enemy2pos)
         self.enemy2attackdistance = 1.5
 
+        # First area
+        self.tutorialLand = self.loader.loadModel("Models/tutorialland6.glb")
+        self.tutorialLand.reparentTo(self.render)
+        self.tutorialLand.setScale(2)
+
         # keyboard input
         self.accept("a", update_key_map, ["left", True])
         self.accept("a-up", update_key_map, ["left", False])
@@ -141,8 +148,9 @@ class RevengeOnCastleMorde(ShowBase):
 
         expfog = Fog("scene-wide-fog")
         expfog.setColor(0, 0, 0)
-        expfog.setExpDensity(0.004)
+        expfog.setExpDensity(0.08)
         self.render.setFog(expfog)
+        
 
         # Movement vec's for player1 and player2
         self.position = Vec3(0, 0, 30)
@@ -256,43 +264,66 @@ class RevengeOnCastleMorde(ShowBase):
         self.AIchar = AICharacter("enemy1", self.enemy1, 100, 0.05, 5)
         self.AIworld.addAiChar(self.AIchar)
         self.AIbehaviors = self.AIchar.getAiBehaviors()
-# \ = panic distance  / = relax dis         \   /     
+   
         self.AIbehaviors.evade(self.player, 20, 0)
         self.AIbehaviors.obstacleAvoidance(0.3)
         self.AIworld.addObstacle(self.enemy2)
 
+        #for Countdown
+        countdownmovers = LerpPosInterval(self.player,
+                    3,
+                    -10,
+                    startPos=None,
+                    other=None,
+                    blendType='noBlend',
+                    bakeInStart=1,
+                    fluid=0,
+                    name=None)
 
-
-    # IF player(s) have caught escaper, setPos(startingPos) and reload everything. Countdown, new round begin load new factors data
-    def beginround(self):
-        round = 1
-        self.countdown()
-        if (round == 2):
-            round = 2
-            self.countdown()
-            self.player.setPos(-10, 0, 30)
-            self.player2.setPos(10, 0, 30)
-            self.enemy1.setPos(0, 0, 10)
-            self.enemy1.show()
+    def enemydeath(self):
+        print("E1 HAS DIED2")
+        self.round + self.roundadder
+        self.enemy1.hide()
+        #can do self.loader.loadModel(bloodgushing.png) and attachNode(enemy1) as a special effect
 
     def countdown(self):
         print("Countdown")
-        self.intervalstart(1, 3.5, 1)
+        countdownmovers.start(1, 3.5, 1)
         self.SPEED = 0
         self.SPEED2 = 0
         self.SPEED3 = 0
-        if self.interval.finish():
+        if self.countdownmovers.finish():
             self.SPEED = 5
             self.SPEED2 = 5
             self.SPEED3 = 4
 
     def gamelose(self):
         print("YOUDIED")
-        self.intervalstart(1, 5, 1)
+        self.interval.start(1, 5, 1)
         #"YOU DIED" goes here
         if self.interval.finish():
             self.mainmenulaunch()
             sys.exit()
+    # IF player(s) have caught escaper, setPos(startingPos) and reload everything. Countdown, new round begin load new factors data
+    
+    def beginround(self):
+        self.round = 1
+        self.player.setPos(-10, 0, 30)
+        self.player2.setPos(10, 0, 30)
+        self.enemy1.setPos(0, 0, 10)
+        self.enemy1.show()
+        if self.round == 2:
+            self.round = 2
+            self.player.setPos(-10, 0, 30)
+            self.player2.setPos(10, 0, 30)
+            self.enemy1.setPos(0, 0, 10)
+            self.enemy1.show()
+            if self.round == 3:
+                self.player.setPos(-10, 0, 30)
+                self.player2.setPos(10, 0, 30)
+                self.enemy1.setPos(0, 0, 10)
+                self.enemy1.show()
+
 
     def mainmenulaunch(self):
         menu = mymenu()
@@ -329,12 +360,6 @@ class RevengeOnCastleMorde(ShowBase):
         enemy1wontleaveZaxis = True
         while (enemy1wontleaveZaxis == True):
             self.enemy1.getZ = 0
-
-    def enemydeath(self):
-        print("E1 HAS DIED2")
-        self.round = +1
-        self.enemy1.hide()
-        #can do self.loader.loadModel(bloodgushing.png) and attachNode(enemy1) as a special effect
 
     def debugme(self):
         self.cTrav.showCollisions(self.render)
