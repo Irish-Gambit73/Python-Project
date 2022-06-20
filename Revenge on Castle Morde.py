@@ -2,7 +2,7 @@ from multiprocessing.connection import wait
 from turtle import delay, update
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData, Vec3, Fog
-from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionHandlerEvent, CollisionNode, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib, CollisionHandlerPusher, CollisionSegment
+from panda3d.core import CollisionBox, CollisionTraverser, CollisionHandlerQueue, CollisionHandlerEvent, CollisionNode, CollisionSphere, CollisionCapsule, BitMask32, WindowProperties, ConfigPageManager, ConfigVariableInt, ConfigVariableBool, ConfigVariableString, AntialiasAttrib, CollisionHandlerPusher, CollisionSegment
 from panda3d.core import *
 from panda3d.ai import *
 from direct.interval.IntervalGlobal import *
@@ -22,6 +22,7 @@ import time, os, math, sys
 configVars = """
 win-size 1280 720
 show-frame-rate-meter 1
+cursor-hidden false
 """
 
 loadPrcFileData("", configVars)
@@ -32,6 +33,7 @@ key_map = {
     "left2": False,
     "right2": False,
     "space": False,
+    "uparrow": False,
 }
 
 def update_key_map(control_name, state):
@@ -45,7 +47,7 @@ class RevengeOnCastleMorde(ShowBase):
         self.camLens.setFov(50)
         self.camLens.setNear(0.8)
         self.render.setAntialias(AntialiasAttrib.MAuto)
-        render.setShaderAuto()
+        self.render.setShaderAuto()
         #self.disableMouse()
 
         self.round = 0
@@ -101,7 +103,8 @@ class RevengeOnCastleMorde(ShowBase):
         # First area
         self.tutorialLand = self.loader.loadModel("Models/tutorialland6.glb")
         self.tutorialLand.reparentTo(self.render)
-        self.tutorialLand.setScale(2)
+        self.tutorialLand.setScale(1)
+        self.tutorialLand.setPos(0, 0, -30)
 
         # keyboard input
         self.accept("a", update_key_map, ["left", True])
@@ -119,31 +122,33 @@ class RevengeOnCastleMorde(ShowBase):
         self.accept("'", update_key_map, ["right2", True])
         self.accept("'-up", update_key_map, ["right2", False])
         self.accept("p", self.jump2)
+        self.accept("arrow_up", update_key_map, ["uparrow", True])
+        self.accept("arrow_up-up", update_key_map,["uparrow", False])
 
         # taskMgr
         self.taskMgr.add(self.update, "update")
 
-
         # Lighting
         light = Spotlight('light')
         light_np = self.render.attachNewNode(light)
-        light_np.set_pos(0, 0, 75)
-        light_np.look_at(0, -1, 0)
+        light_np.set_pos(0, 0, 10)
+        light_np.look_at(0, 0, 0)
+        light_np.setColor((0, 0, 0, 0))
         light.setShadowCaster(True)
         light.getLens().setNearFar(1, 100)
         self.render.setLight(light_np)
 
         plight = PointLight("plight")
-        plight.setColor((1, 1, 1, 1))
-        plnp = render.attachNewNode(plight)
-        plnp.look_at(0, 0, -1)
-        plnp.setPos(0, 0, 6)
+        plight.setColor((0, 0, 0, 0))
+        plnp = self.render.attachNewNode(plight)
+        plnp.look_at(0, 0, 0)
+        plnp.setPos(0, 0, 10)
         self.render.setLight(plnp)
 
         alight = AmbientLight("alight")
         alight.setColor((0.08, 0.08, 0.08, 1))
-        alnp = render.attachNewNode(alight)
-        alnp.set_pos(0, 0, 3)
+        alnp = self.render.attachNewNode(alight)
+        alnp.set_pos(0, 0, 4)
         self.render.setLight(alnp)
 
         expfog = Fog("scene-wide-fog")
@@ -228,7 +233,7 @@ class RevengeOnCastleMorde(ShowBase):
         # Enemy1 collision
         self.queue101 = CollisionHandlerQueue()
         collider_nodee1 = CollisionNode("e1coll")
-        coll_boxe1 = CollisionBox((-3.7, -3, 0), (3.7, 3, 8))
+        coll_boxe1 = CollisionCapsule(0, 0, 4, 0, 0, 4, 5)
         collider_nodee1.setFromCollideMask(BitMask32.bit(1))
         collider_nodee1.addSolid(coll_boxe1)
         collidere1 = self.enemy1.attachNewNode(collider_nodee1)
@@ -270,9 +275,9 @@ class RevengeOnCastleMorde(ShowBase):
         self.AIworld.addObstacle(self.enemy2)
 
         #for Countdown
-        countdownmovers = LerpPosInterval(self.player,
+        self.countdownmovers = LerpPosInterval(self.player,
                     3,
-                    -10,
+                    (-10, 10, 0),
                     startPos=None,
                     other=None,
                     blendType='noBlend',
@@ -288,7 +293,7 @@ class RevengeOnCastleMorde(ShowBase):
 
     def countdown(self):
         print("Countdown")
-        countdownmovers.start(1, 3.5, 1)
+        self.countdownmovers.start()
         self.SPEED = 0
         self.SPEED2 = 0
         self.SPEED3 = 0
@@ -323,7 +328,6 @@ class RevengeOnCastleMorde(ShowBase):
                 self.player2.setPos(10, 0, 30)
                 self.enemy1.setPos(0, 0, 10)
                 self.enemy1.show()
-
 
     def mainmenulaunch(self):
         menu = mymenu()
@@ -394,6 +398,13 @@ class RevengeOnCastleMorde(ShowBase):
                 self.enemy1health = (self.enemy1health - 10)
                 if self.enemy1health < 0:
                     print("E1DEATH")
+                    self.enemydeath()
+        if key_map["uparrow"]:
+            if self.queue5.getEntries():
+                print("yahoo2")
+                self.enemy1health = (self.enemy1health -10)
+                if self.enemy1health < 0:
+                    print("E!DEATH")
                     self.enemydeath()
 
         # Calculating the position vector based on the velocity and the acceleration vectors
