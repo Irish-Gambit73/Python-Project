@@ -5,7 +5,7 @@ Necessary:
 - Make animations: Idle, attack, walk https://github.com/fireclawthefox/panda3d-tutorial/blob/master/Panda3D%20Tutorial.pdf
 - Gui and menu (Menu.py and healthbars)
 - Create an arena (Castlevenia)
-- Collisions and loaders for traps, fire, lava
+- Collisions and loaders for traps, fire, lava       need to get lava for arena
 - Install YABEE and blender 2.7 for converting .glb files into .egg files. Need this for collisions
 
 Necessary Little: 
